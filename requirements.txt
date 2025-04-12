@@ -3,3 +3,4 @@ apscheduler==3.10.4
 python-dotenv==1.0.1
 mysql-connector-python==8.0.33
 beautifulsoup4==4.12.2
+matplotlib==3.8.4
