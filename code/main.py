@@ -8,9 +8,17 @@ import mysql.connector
 import matplotlib.pyplot as plt
 import re
 import mysql.connector
-from database_config import *
 
-from database_config import mydb, api_token
+
+from database_config import api_token
+def get_db_cursor():
+    conn = mysql.connector.connect(
+        host=os.environ.get("DB_HOST"),
+        user=os.environ.get("DB_USER"),
+        password=os.environ.get("DB_PASSWORD"),
+        database=os.environ.get("DB_NAME")
+    )
+    return conn, conn.cursor(buffered=True)
 
 def get_db_cursor():
     connection = mysql.connector.connect(
@@ -39,7 +47,7 @@ bot = telebot.TeleBot(API_TOKEN)
 
 @bot.message_handler(commands=['help', 'start','Start'])
 def Send_Welcome(message):
-    cursor = mydb.cursor()
+    conn, cursor = get_db_cursor()
     query = ("SELECT chatId FROM users WHERE chatId=%s")
     val = (message.chat.id,)
     cursor.execute(query, val)
@@ -185,12 +193,12 @@ def Register_User(message):
         msg = bot.reply_to(message, 'Well then, Good Bye.',reply_markup=markup)
         bot.register_next_step_handler(msg, Send_Welcome)
     else:
-        cursor = mydb.cursor()
+        conn, cursor = get_db_cursor()
         query = ("INSERT INTO users(chatId, displayName) VALUES (%s,%s)")
         val = (message.chat.id, message.text)
         cursor.execute(query, val)
         msg = bot.reply_to(message, 'User Registered.\n/Start')
-        mydb.commit()
+        conn.commit()
         bot.register_next_step_handler(msg, Send_Welcome)
 
 @bot.message_handler(commands=['Add_Reminder'])
@@ -462,40 +470,40 @@ def Add_Reminder_To_DB(message):
         bot.register_next_step_handler(msg, Send_Welcome)
     else:
         if categoryId == 1:
-            cursor = mydb.cursor()
+            conn, cursor = get_db_cursor()
             query = ("INSERT INTO reminders(chatId, date, time, message) VALUES (%s,%s,%s,%s)")
             msg = 'Reminder : Wish Happy Birthday to '+str(value)
             val = (message.chat.id, date, time, msg)
             cursor.execute(query, val)
-            mydb.commit()
+            conn.commit()
         elif categoryId == 2:
-            cursor = mydb.cursor()
+            conn, cursor = get_db_cursor()
             query = ("INSERT INTO reminders(chatId, date, time, message) VALUES (%s,%s,%s,%s)")
             msg = 'Reminder : Wish Happy Anniversary to '+str(value)
             val = (message.chat.id, date, time, msg)
             cursor.execute(query, val)
-            mydb.commit()
+            conn.commit()
         elif categoryId == 3:
-            cursor = mydb.cursor()
+            conn, cursor = get_db_cursor()
             query = ("INSERT INTO reminders(chatId, date, time, message) VALUES (%s,%s,%s,%s)")
             msg = 'Reminder : You have a meeting at '+str(value)
             val = (message.chat.id, date, time, msg)
             cursor.execute(query, val)
-            mydb.commit()
+            conn.commit()
         elif categoryId == 4:
-            cursor = mydb.cursor()
+            conn, cursor = get_db_cursor()
             query = ("INSERT INTO reminders(chatId, date, time, message) VALUES (%s,%s,%s,%s)")
             msg = 'Reminder : You have to '+str(value)
             val = (message.chat.id, date, time, msg)
             cursor.execute(query, val)
-            mydb.commit()
+            conn.commit()
         elif categoryId == 5:
-            cursor = mydb.cursor()
+            conn, cursor = get_db_cursor()
             query = ("INSERT INTO reminders(chatId, date, time, message) VALUES (%s,%s,%s,%s)")
             msg = 'Reminder : '+str(value)
             val = (message.chat.id, date, time, msg)
             cursor.execute(query, val)
-            mydb.commit()
+            conn.commit()
         msg = bot.reply_to(message, 'Reminder Added \n/Add_Reminder \n/Exit')
 
 @bot.message_handler(commands=['View_Reminders'])
@@ -508,7 +516,7 @@ def View_Reminders(message):
         msg = bot.reply_to(message, 'Well then, Good Bye.',reply_markup=markup)
         bot.register_next_step_handler(msg, Send_Welcome)
     else:
-        cursor = mydb.cursor()
+        conn, cursor = get_db_cursor()
         query = ("SELECT DISTINCT date FROM reminders WHERE chatId= %s ORDER BY date ASC")
         val = (message.chat.id,)
         cursor.execute(query, val)
@@ -539,7 +547,7 @@ def Delete_Reminders(message):
         msg = bot.reply_to(message, 'Well then, Good Bye.',reply_markup=markup)
         bot.register_next_step_handler(msg, Send_Welcome)
     else:
-        cursor = mydb.cursor()
+        conn, cursor = get_db_cursor()
         query = ("SELECT date,time,message FROM reminders WHERE chatId= %s ORDER BY date,time ASC")
         val = (message.chat.id,)
         cursor.execute(query, val)
@@ -569,13 +577,13 @@ def Delete(message):
         bot.register_next_step_handler(msg, Send_Welcome)
     else:
         global resultSet
-        cursor = mydb.cursor()
+        conn, cursor = get_db_cursor()
         value = value.replace('/','')
         indexValue = int(value) - 1        
         query = ("DELETE FROM reminders WHERE chatId= %s AND date=%s AND time=%s AND message=%s")
         val = (message.chat.id,resultSet[indexValue][0],resultSet[indexValue][1],resultSet[indexValue][2])
         cursor.execute(query, val)
-        mydb.commit()
+        conn.commit()
         msg = bot.reply_to(message, 'Reminder Deleted.\n/Start')
         bot.register_next_step_handler(msg, Send_Welcome)
 
@@ -671,7 +679,7 @@ def private_query(query):
         sql = "INSERT INTO subscription (userid,BTC,MKR,THR,BCH,XIN,ETH,DASH,BSV,LTC,ZEC) VALUES (%s, %s, %s, %s,%s, %s,%s, %s, %s, %s, %s)"
         val = (str1[0],str1[1],str1[2],str1[3],str1[4],str1[5],str1[6],str1[7],str1[8],str1[9],str1[10])
         mycursor.execute(sql, val)  
-        mydb.commit() 
+        conn.commit() 
     else:
         myresult = mycursor.fetchone()
 
@@ -719,7 +727,7 @@ def private_query(query):
         sql = "UPDATE subscription SET BTC=%s,MKR=%s,THR=%s,BCH=%s,XIN=%s,ETH=%s,DASH=%s,BSV=%s,LTC=%s,ZEC=%s WHERE userid=%s"
         val = (str2[0],str2[1],str2[2],str2[3],str2[4],str2[5],str2[6],str2[7],str2[8],str2[9],str(query.message.chat.id),)
         mycursor.execute(sql, val)
-        mydb.commit()
+        conn.commit()
 
 @bot.message_handler(commands=['Unsubscribe'])
 def unsubscribe(message):
@@ -802,7 +810,7 @@ def private_query(query):
         sql = "UPDATE subscription SET BTC=%s,MKR=%s,THR=%s,BCH=%s,XIN=%s,ETH=%s,DASH=%s,BSV=%s,LTC=%s,ZEC=%s WHERE userid=%s"
         val = (str2[0],str2[1],str2[2],str2[3],str2[4],str2[5],str2[6],str2[7],str2[8],str2[9],str(query.message.chat.id),)
         mycursor.execute(sql, val)
-        mydb.commit()
+        conn.commit()
 
 bot.enable_save_next_step_handlers(delay=2)
 bot.load_next_step_handlers()
