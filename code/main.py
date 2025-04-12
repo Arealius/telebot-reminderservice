@@ -1,3 +1,4 @@
+import os
 from bs4 import BeautifulSoup
 from requests import get
 import logging
