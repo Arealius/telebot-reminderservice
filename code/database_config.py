@@ -1,5 +1,12 @@
-hostname = "localhost"
-username = "root"
-password = "password"
-databasename = "reminder"
-apitoken = '816493565:AAFFYOe77AjsLp-c_5KdvDnEXfLzWDVDn1U'
+import os
+import mysql.connector
+
+mydb = mysql.connector.connect(
+    host=os.environ.get("DB_HOST"),
+    user=os.environ.get("DB_USER"),
+    password=os.environ.get("DB_PASSWORD"),
+    database=os.environ.get("DB_NAME")
+)
+
+api_token = os.environ.get("API_TOKEN")
+
