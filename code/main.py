@@ -10,14 +10,10 @@ import re
 import mysql.connector
 from database_config import *
 
-mydb = mysql.connector.connect(
-  host=hostname,
-  user=username,
-  passwd=password,
-  database=databasename
-)
+from database_config import mydb, api_token
+
 mycursor = mydb.cursor(buffered=True)
-API_TOKEN = apitoken
+API_TOKEN = api_token
 categories = {"Birthday": 1, "Anniversary": 2, "Meeting": 3, "Task": 4, "Other": 5}
 categoryId = 0
 date = ''
