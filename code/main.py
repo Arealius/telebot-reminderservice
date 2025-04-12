@@ -12,7 +12,16 @@ from database_config import *
 
 from database_config import mydb, api_token
 
-mycursor = mydb.cursor(buffered=True)
+def get_db_cursor():
+    connection = mysql.connector.connect(
+        host=os.environ.get("DB_HOST"),
+        user=os.environ.get("DB_USER"),
+        password=os.environ.get("DB_PASSWORD"),
+        database=os.environ.get("DB_NAME")
+    )
+    return connection, connection.cursor(buffered=True)
+
+
 API_TOKEN = api_token
 categories = {"Birthday": 1, "Anniversary": 2, "Meeting": 3, "Task": 4, "Other": 5}
 categoryId = 0
