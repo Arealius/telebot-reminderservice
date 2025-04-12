@@ -10,3 +10,8 @@ mydb = mysql.connector.connect(
 
 api_token = os.environ.get("BOT_TOKEN")
 
+if not api_token:
+    raise Exception("❌ BOT_TOKEN is not set in environment variables")
+else:
+    print("✅ BOT_TOKEN loaded successfully")
+
