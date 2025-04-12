@@ -8,5 +8,5 @@ mydb = mysql.connector.connect(
     database=os.environ.get("DB_NAME")
 )
 
-api_token = os.environ.get("API_TOKEN")
+api_token = os.environ.get("BOT_TOKEN")
 
